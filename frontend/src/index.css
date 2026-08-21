@@ -1,0 +1,154 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --surface-50: #ffffff;
+  --surface-100: #f1f5f9;
+  --surface-200: #e2e8f0;
+  --surface-300: #cbd5e1;
+  --border-color: rgba(15, 23, 42, 0.08);
+  --border-hover: rgba(30, 64, 175, 0.3);
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --grid-line: rgba(15, 23, 42, 0.035);
+
+  /* Light Theme: Navy Blue Primary */
+  --primary: #1e40af;
+  --primary-hover: #1e3a8a;
+  --primary-glow: rgba(30, 64, 175, 0.22);
+  --primary-dim: rgba(30, 64, 175, 0.08);
+  --primary-foreground: #ffffff;
+}
+
+.dark {
+  --background: #080a10;
+  --foreground: #f8fafc;
+  --surface-50: #131722;
+  --surface-100: #0e121c;
+  --surface-200: #090d15;
+  --surface-300: #05070c;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(56, 189, 248, 0.35);
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --grid-line: rgba(255, 255, 255, 0.025);
+
+  /* Dark Theme: Sky Blue Primary */
+  --primary: #38bdf8;
+  --primary-hover: #0ea5e9;
+  --primary-glow: rgba(56, 189, 248, 0.35);
+  --primary-dim: rgba(56, 189, 248, 0.12);
+  --primary-foreground: #080a10;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  color: var(--text-primary);
+  background-color: var(--background);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  overflow: hidden;
+  height: 100vh;
+  letter-spacing: -0.012em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Subtle Ambient Dot-Grid */
+.bg-grid {
+  background-size: 28px 28px;
+  background-image: radial-gradient(circle, var(--grid-line) 1.2px, transparent 1.2px);
+}
+
+/* Glass Surface Components */
+.glass-panel {
+  background: var(--surface-100);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-color);
+}
+
+.glass-card {
+  background: var(--surface-50);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-color);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dark .glass-card {
+  background: rgba(19, 23, 34, 0.7);
+}
+
+.glass-card:hover {
+  border-color: var(--border-hover);
+  box-shadow: 0 8px 24px -6px var(--primary-glow);
+  transform: translateY(-2px);
+}
+
+.glass-input {
+  background: var(--surface-50);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+}
+
+.dark .glass-input {
+  background: rgba(14, 18, 28, 0.88);
+}
+
+.glass-input:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 20px -3px var(--primary-glow);
+}
+
+/* Custom Minimal Scrollbars */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(120, 120, 120, 0.2);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* Subtle Shimmer text */
+.shimmer-text {
+  background: linear-gradient(90deg, #1e40af 0%, #38bdf8 50%, #1e3a8a 100%);
+  background-size: 200% auto;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: shimmer 3s linear infinite;
+}
+
+.dark .shimmer-text {
+  background: linear-gradient(90deg, #ffffff 0%, #38bdf8 50%, #ffffff 100%);
+  background-size: 200% auto;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: shimmer 3s linear infinite;
+}
+
+code, kbd {
+  font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+}

@@ -1,0 +1,16 @@
+{
+  "name": "Eagle AI — Personal Intelligent Assistant",
+  "short_name": "Eagle AI",
+  "description": "Production Personal AI Assistant Workspace with Neural Reasoning",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#080a10",
+  "theme_color": "#38bdf8",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
