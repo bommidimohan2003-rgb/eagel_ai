@@ -35,8 +35,12 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     ALGORITHM: str = "HS256"
 
-    # Database: MySQL Workbench (root:Bmohan@localhost:3306/nemotron_db)
-    DATABASE_URL: str = "mysql+aiomysql://root:Bmohan@localhost:3306/nemotron_db"
+    # Database: MySQL Workbench or Vercel Serverless SQLite fallback
+    DATABASE_URL: str = (
+        "sqlite+aiosqlite:////tmp/nemotron.db"
+        if os.environ.get("VERCEL") and not os.environ.get("DATABASE_URL")
+        else "mysql+aiomysql://root:Bmohan@localhost:3306/nemotron_db"
+    )
     
     # Redis
     REDIS_URL: str = "redis://localhost:6379/0"
@@ -55,7 +59,11 @@ class Settings(BaseSettings):
     CHAT_RATE_LIMIT: str = "30/minute"
 
     # File uploads
-    UPLOAD_DIR: str = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "uploads")
+    UPLOAD_DIR: str = (
+        "/tmp/uploads"
+        if os.environ.get("VERCEL")
+        else os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "uploads")
+    )
     MAX_FILE_SIZE_BYTES: int = 20 * 1024 * 1024  # 20 MB
 
     model_config = SettingsConfigDict(
