@@ -81,6 +81,14 @@ class ApiClient {
           }
         }
 
+        if (error.response?.status === 405 || (error.response?.status === 404 && !API_BASE && window.location.hostname !== 'localhost')) {
+          return Promise.reject(
+            new Error(
+              'Backend API not connected: Vercel only hosts the frontend UI. Please set VITE_API_URL to your deployed FastAPI backend URL, or open http://localhost:5173 for local development.'
+            )
+          );
+        }
+
         const message =
           (error.response?.data as any)?.error?.message ||
           (error.response?.data as any)?.detail ||
