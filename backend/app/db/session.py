@@ -1,7 +1,8 @@
+import asyncio
 import os
 from typing import AsyncGenerator
 from urllib.parse import urlparse
-from sqlalchemy import text
+from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from app.core.config import settings
 from app.core.logging import logger
@@ -34,37 +35,74 @@ AsyncSessionLocal = async_sessionmaker(
     autoflush=False,
 )
 
+_db_initialized = False
+_init_lock = asyncio.Lock()
+
 
 async def init_db_if_needed():
     """
     Ensures MySQL / SQLite database is accessible and tables exist.
     If database does not exist in MySQL, attempts to create it automatically.
+    Also auto-seeds default demo user for serverless environments.
     """
-    if "mysql" in db_url:
-        try:
-            parsed = urlparse(db_url)
-            db_name = parsed.path.lstrip("/")
-            if db_name:
-                base_url = db_url.replace(f"/{db_name}", "")
-                temp_engine = create_async_engine(base_url, isolation_level="AUTOCOMMIT")
-                async with temp_engine.connect() as conn:
-                    await conn.execute(text(f"CREATE DATABASE IF NOT EXISTS `{db_name}` DEFAULT CHARACTER SET utf8mb4;"))
-                await temp_engine.dispose()
-                logger.info(f"Verified / created MySQL database `{db_name}`.")
-        except Exception as e:
-            logger.warning(f"Could not auto-create MySQL database (might already exist or server not ready): {e}")
+    global _db_initialized
+    if _db_initialized:
+        return
 
-    # Create all tables if they don't exist
-    try:
-        from app.db.base import Base
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
-        logger.info("Database schema tables verified/created successfully.")
-    except Exception as e:
-        logger.warning(f"Could not auto-create schema tables: {e}")
+    async with _init_lock:
+        if _db_initialized:
+            return
+
+        if "mysql" in db_url:
+            try:
+                parsed = urlparse(db_url)
+                db_name = parsed.path.lstrip("/")
+                if db_name:
+                    base_url = db_url.replace(f"/{db_name}", "")
+                    temp_engine = create_async_engine(base_url, isolation_level="AUTOCOMMIT")
+                    async with temp_engine.connect() as conn:
+                        await conn.execute(text(f"CREATE DATABASE IF NOT EXISTS `{db_name}` DEFAULT CHARACTER SET utf8mb4;"))
+                    await temp_engine.dispose()
+                    logger.info(f"Verified / created MySQL database `{db_name}`.")
+            except Exception as e:
+                logger.warning(f"Could not auto-create MySQL database: {e}")
+
+        # Create all tables if they don't exist
+        try:
+            from app.db.base import Base
+            from app.models import User, UserSettings
+            from app.core.security import get_password_hash
+
+            async with engine.begin() as conn:
+                await conn.run_sync(Base.metadata.create_all)
+            logger.info("Database schema tables verified/created successfully.")
+
+            # Seed demo user if no user exists
+            async with AsyncSessionLocal() as session:
+                stmt = select(User).limit(1)
+                res = await session.execute(stmt)
+                existing = res.scalar_one_or_none()
+                if not existing:
+                    demo_user = User(
+                        email="demo@eagle.ai",
+                        hashed_password=get_password_hash("password123"),
+                        full_name="Demo User",
+                    )
+                    session.add(demo_user)
+                    await session.flush()
+                    session.add(UserSettings(user_id=demo_user.id))
+                    await session.commit()
+                    logger.info("Auto-seeded demo account: demo@eagle.ai / password123")
+
+            _db_initialized = True
+        except Exception as e:
+            logger.warning(f"Database initialization warning: {e}")
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    if not _db_initialized:
+        await init_db_if_needed()
+
     async with AsyncSessionLocal() as session:
         try:
             yield session

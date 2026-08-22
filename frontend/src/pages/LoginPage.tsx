@@ -108,6 +108,19 @@ export function LoginPage() {
           <Button type="submit" variant="primary" className="w-full mt-3 py-3 text-sm font-bold shadow-glow hover:shadow-glow-lg" isLoading={loading}>
             Sign In to Workspace
           </Button>
+
+          {/* Quick Demo Fill Button */}
+          <button
+            type="button"
+            onClick={() => {
+              setEmail('demo@eagle.ai');
+              setPassword('password123');
+            }}
+            className="w-full py-2 rounded-2xl bg-surface-200/70 hover:bg-surface-200 border border-border text-[11px] font-semibold text-text-secondary hover:text-primary transition-all flex items-center justify-center gap-1.5"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-primary" />
+            <span>Use Demo Account (demo@eagle.ai)</span>
+          </button>
         </form>
 
         <div className="text-center mt-6 text-xs text-text-muted">
