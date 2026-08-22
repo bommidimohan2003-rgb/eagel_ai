@@ -4,6 +4,7 @@ import { Bot, ChevronDown, ChevronRight, Cpu, Sparkles, Image as ImageIcon } fro
 import { MarkdownRenderer } from '@/components/chat/MarkdownRenderer';
 import { MessageActions } from '@/components/chat/MessageActions';
 import { GeneratedImageCard } from '@/components/image-generation/GeneratedImageCard';
+import { EagleLogo } from '@/components/ui/EagleLogo';
 import { GeneratedImageItem, Message } from '@/types';
 
 interface AssistantMessageProps {
@@ -44,12 +45,12 @@ export function AssistantMessage({ message, onRegenerate, onSelectPrompt }: Assi
     >
       {/* Premium Avatar */}
       <div className="relative mt-0.5 flex-shrink-0">
-        <div className={`w-8 h-8 rounded-xl border flex items-center justify-center shadow-glow transition-transform group-hover:scale-105 ${
+        <div className={`w-8 h-8 rounded-xl border flex items-center justify-center shadow-glow transition-transform group-hover:scale-105 p-1 ${
           imageItem
             ? 'bg-gradient-to-br from-purple-500/20 to-purple-500/5 border-purple-500/40 text-purple-400'
-            : 'bg-gradient-to-br from-primary/20 to-primary/5 border-primary/40 text-primary'
+            : 'bg-surface-100 border-border text-primary'
         }`}>
-          {imageItem ? <ImageIcon className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
+          {imageItem ? <ImageIcon className="w-4 h-4" /> : <EagleLogo className="w-6 h-6" withGlow />}
         </div>
       </div>
 

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, Sparkles } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { EagleLogo } from '@/components/ui/EagleLogo';
 import { useAuth } from '@/hooks/useAuth';
 import { useSEO } from '@/hooks/useSEO';
 
@@ -57,9 +58,9 @@ export function RegisterPage() {
         {/* Header Branding */}
         <div className="text-center mb-8">
           <div className="relative inline-flex items-center justify-center mb-4">
-            <div className="absolute -inset-2 bg-primary/20 blur-lg rounded-2xl animate-pulse" />
-            <div className="relative w-14 h-14 rounded-2xl bg-surface-100 border border-primary/40 flex items-center justify-center text-primary shadow-glow">
-              <Sparkles className="w-7 h-7" />
+            <div className="absolute -inset-3 bg-primary/20 blur-xl rounded-3xl animate-pulse" />
+            <div className="relative w-16 h-16 rounded-2xl bg-surface-100 border border-primary/40 flex items-center justify-center shadow-glow p-2">
+              <EagleLogo className="w-12 h-12" withGlow />
             </div>
           </div>
           <h2 className="text-2xl font-bold text-text-primary tracking-tight">Create Workspace</h2>

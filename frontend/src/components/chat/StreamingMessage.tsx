@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Bot, ChevronDown, ChevronRight, Sparkles } from 'lucide-react';
+import { Bot, ChevronDown, ChevronRight } from 'lucide-react';
 import { MarkdownRenderer } from '@/components/chat/MarkdownRenderer';
 import { TypingIndicator } from '@/components/chat/TypingIndicator';
+import { EagleLogo } from '@/components/ui/EagleLogo';
 
 interface StreamingMessageProps {
   content: string;
@@ -22,9 +23,9 @@ export function StreamingMessage({ content, thinkingContent, onStop }: Streaming
     >
       {/* Bot Avatar with Glowing Aura */}
       <div className="relative mt-0.5 flex-shrink-0">
-        <div className="absolute inset-0 rounded-xl bg-primary/30 blur-md animate-pulse" />
-        <div className="relative w-8 h-8 rounded-xl bg-surface-100 border border-primary/50 flex items-center justify-center text-primary shadow-glow">
-          <Sparkles className="w-4 h-4" />
+        <div className="absolute inset-0 rounded-xl bg-amber-500/20 blur-md animate-pulse" />
+        <div className="relative w-8 h-8 rounded-xl bg-surface-100 border border-primary/50 flex items-center justify-center shadow-glow p-1">
+          <EagleLogo className="w-6 h-6" withGlow />
         </div>
       </div>
 

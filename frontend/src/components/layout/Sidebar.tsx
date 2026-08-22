@@ -23,6 +23,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { Conversation } from '@/types';
 import { cn } from '@/lib/utils';
 
+import { EagleLogo } from '@/components/ui/EagleLogo';
+
 interface SidebarProps {
   conversations: Conversation[];
   activeId: string | null;
@@ -145,12 +147,12 @@ export function Sidebar({
       >
         {/* Workspace Brand Header */}
         <div className="p-4 border-b border-border flex items-center justify-between">
-          <Link to="/chat" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-primary/30 to-primary/10 border border-primary/40 flex items-center justify-center text-primary shadow-sm">
-              <Sparkles className="w-4 h-4" />
+          <Link to="/chat" className="flex items-center gap-2.5 group">
+            <div className="w-9 h-9 rounded-xl bg-surface-100 border border-border flex items-center justify-center shadow-sm group-hover:border-primary/50 transition-colors p-1">
+              <EagleLogo className="w-7 h-7" withGlow />
             </div>
             <div>
-              <h1 className="text-sm font-bold text-text-primary tracking-tight leading-none">
+              <h1 className="text-sm font-bold text-text-primary tracking-tight leading-none group-hover:text-primary transition-colors">
                 Eagle AI
               </h1>
               <p className="text-[11px] text-text-muted mt-0.5 font-medium">Personal Workspace</p>

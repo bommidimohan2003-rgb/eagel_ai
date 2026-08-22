@@ -16,6 +16,7 @@ import {
   Terminal,
   Zap,
 } from 'lucide-react';
+import { EagleLogo } from '@/components/ui/EagleLogo';
 
 interface EmptyStateProps {
   onSelectPrompt: (prompt: string) => void;
@@ -133,13 +134,13 @@ export function EmptyState({ onSelectPrompt }: EmptyStateProps) {
         <div className="text-center max-w-2xl mx-auto pt-4 md:pt-8 mb-8">
           {/* Clean Brand Mark */}
           <div className="inline-flex items-center justify-center mb-5">
-            <div className="w-12 h-12 rounded-2xl bg-surface-100 border border-primary/30 flex items-center justify-center text-primary shadow-sm">
-              <Sparkles className="w-6 h-6" />
+            <div className="w-16 h-16 rounded-3xl bg-surface-100 border border-border flex items-center justify-center shadow-glow p-2 hover:scale-105 transition-transform duration-300">
+              <EagleLogo className="w-12 h-12" withGlow />
             </div>
           </div>
 
           <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-text-primary tracking-tight mb-2.5">
-            Personal AI Workspace
+            Eagle AI Intelligence
           </h1>
           <p className="text-sm md:text-base text-text-secondary leading-relaxed max-w-lg mx-auto">
             A private, high-performance workspace for software architecture, reasoning, analysis, and execution.
