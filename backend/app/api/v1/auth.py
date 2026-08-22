@@ -1,4 +1,3 @@
-import os
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -6,7 +5,6 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 from app.core.exceptions import AuthenticationError
-from app.core.logging import logger
 from app.core.security import (
     create_access_token,
     create_refresh_token,
@@ -45,27 +43,7 @@ async def get_current_user(
     user = result.scalar_one_or_none()
 
     if not user:
-        # On Vercel / serverless ephemeral environments, restore user record for valid signed JWT
-        if os.environ.get("VERCEL") and ("sqlite" in settings.DATABASE_URL or "127.0.0.1" in settings.DATABASE_URL or "localhost" in settings.DATABASE_URL):
-            try:
-                user = User(
-                    id=user_id,
-                    email=f"user_{user_id[:8]}@eagle.ai",
-                    hashed_password=get_password_hash("password123"),
-                    full_name="Workspace User",
-                )
-                db.add(user)
-                await db.flush()
-                db.add(UserSettings(user_id=user.id))
-                await db.commit()
-                await db.refresh(user)
-                logger.info(f"Auto-restored user {user.id} in serverless session.")
-            except Exception as e:
-                logger.warning(f"Could not restore user in serverless session: {e}")
-                raise AuthenticationError("User not found")
-        else:
-            raise AuthenticationError("User not found")
-
+        raise AuthenticationError("User not found")
     if not user.is_active:
         raise AuthenticationError("User account is inactive")
 
@@ -77,14 +55,15 @@ async def register(
     data: RegisterRequest,
     db: AsyncSession = Depends(get_db),
 ):
-    # Check if user exists
     clean_email = data.email.lower().strip()
+
+    # Check if user exists
     stmt = select(User).where(User.email == clean_email)
     existing = (await db.execute(stmt)).scalar_one_or_none()
     if existing:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="User with this email already exists",
+            detail="An account with this email already exists. Please sign in instead.",
         )
 
     user = User(
@@ -114,39 +93,8 @@ async def login(
     stmt = select(User).where(User.email == clean_email)
     user = (await db.execute(stmt)).scalar_one_or_none()
 
-    if not user:
-        # On Vercel ephemeral serverless environments, auto-provision user so cold starts never block login
-        is_serverless_ephemeral = os.environ.get("VERCEL") and (
-            "sqlite" in settings.DATABASE_URL
-            or "127.0.0.1" in settings.DATABASE_URL
-            or "localhost" in settings.DATABASE_URL
-        )
-        if is_serverless_ephemeral or clean_email == "demo@eagle.ai":
-            try:
-                user = User(
-                    email=clean_email,
-                    hashed_password=get_password_hash(data.password),
-                    full_name=clean_email.split("@")[0].capitalize(),
-                )
-                db.add(user)
-                await db.flush()
-                db.add(UserSettings(user_id=user.id))
-                await db.commit()
-                await db.refresh(user)
-                logger.info(f"Auto-provisioned user {clean_email} on serverless cold-start.")
-            except Exception as e:
-                logger.warning(f"Auto-provisioning failed: {e}")
-                raise AuthenticationError("Incorrect email or password")
-        else:
-            raise AuthenticationError("Incorrect email or password")
-
-    if not verify_password(data.password, user.hashed_password):
-        # If this is demo user or password is password123, update hash
-        if clean_email == "demo@eagle.ai" and data.password == "password123":
-            user.hashed_password = get_password_hash("password123")
-            await db.commit()
-        else:
-            raise AuthenticationError("Incorrect email or password")
+    if not user or not verify_password(data.password, user.hashed_password):
+        raise AuthenticationError("Incorrect email or password")
 
     if not user.is_active:
         raise AuthenticationError("User account is inactive")
@@ -184,28 +132,8 @@ async def refresh_token(
     stmt = select(User).where(User.id == user_id)
     user = (await db.execute(stmt)).scalar_one_or_none()
 
-    if not user:
-        if os.environ.get("VERCEL") and ("sqlite" in settings.DATABASE_URL or "127.0.0.1" in settings.DATABASE_URL or "localhost" in settings.DATABASE_URL):
-            try:
-                user = User(
-                    id=user_id,
-                    email=f"user_{user_id[:8]}@eagle.ai",
-                    hashed_password=get_password_hash("password123"),
-                    full_name="Workspace User",
-                )
-                db.add(user)
-                await db.flush()
-                db.add(UserSettings(user_id=user.id))
-                await db.commit()
-                await db.refresh(user)
-            except Exception as e:
-                logger.warning(f"Could not restore user on refresh: {e}")
-                raise AuthenticationError("User not found or inactive")
-        else:
-            raise AuthenticationError("User not found or inactive")
-
-    if not user.is_active:
-        raise AuthenticationError("User account is inactive")
+    if not user or not user.is_active:
+        raise AuthenticationError("User not found or inactive")
 
     new_access_token = create_access_token(subject=user.id)
     new_refresh_token = create_refresh_token(subject=user.id)

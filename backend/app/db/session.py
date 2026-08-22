@@ -2,14 +2,22 @@ import asyncio
 import os
 from typing import AsyncGenerator
 from urllib.parse import urlparse
-from sqlalchemy import select, text
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from app.core.config import settings
 from app.core.logging import logger
 
 db_url = settings.DATABASE_URL
 
-# When deployed on Vercel, localhost MySQL is unreachable. Fallback to /tmp/nemotron.db
+# Normalize cloud PostgreSQL / MySQL URLs for async drivers (e.g. Supabase, Neon, Railway)
+if db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql+asyncpg://", 1)
+elif db_url.startswith("postgresql://") and not db_url.startswith("postgresql+asyncpg://"):
+    db_url = db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+elif db_url.startswith("mysql://") and not db_url.startswith("mysql+aiomysql://"):
+    db_url = db_url.replace("mysql://", "mysql+aiomysql://", 1)
+
+# When deployed on Vercel without an external DB, localhost MySQL is unreachable. Fallback to /tmp/nemotron.db
 if os.environ.get("VERCEL") and ("localhost" in db_url or "127.0.0.1" in db_url):
     db_url = "sqlite+aiosqlite:////tmp/nemotron.db"
     logger.info("Vercel deployment detected with local DB URL: falling back to /tmp/nemotron.db SQLite engine.")
@@ -17,6 +25,9 @@ if os.environ.get("VERCEL") and ("localhost" in db_url or "127.0.0.1" in db_url)
 connect_args = {}
 if db_url.startswith("sqlite"):
     connect_args["check_same_thread"] = False
+elif "postgresql" in db_url:
+    # Ensure SSL is handled smoothly for cloud PostgreSQL like Supabase/Neon
+    connect_args["server_settings"] = {"application_name": "eagle_ai"}
 
 engine = create_async_engine(
     db_url,
@@ -41,9 +52,7 @@ _init_lock = asyncio.Lock()
 
 async def init_db_if_needed():
     """
-    Ensures MySQL / SQLite database is accessible and tables exist.
-    If database does not exist in MySQL, attempts to create it automatically.
-    Also auto-seeds default demo user for serverless environments.
+    Ensures database is accessible and all schema tables exist.
     """
     global _db_initialized
     if _db_initialized:
@@ -70,30 +79,12 @@ async def init_db_if_needed():
         # Create all tables if they don't exist
         try:
             from app.db.base import Base
-            from app.models import User, UserSettings
-            from app.core.security import get_password_hash
+            # Import models to register them on Base.metadata
+            import app.models  # noqa: F401
 
             async with engine.begin() as conn:
                 await conn.run_sync(Base.metadata.create_all)
             logger.info("Database schema tables verified/created successfully.")
-
-            # Seed demo user if no user exists
-            async with AsyncSessionLocal() as session:
-                stmt = select(User).limit(1)
-                res = await session.execute(stmt)
-                existing = res.scalar_one_or_none()
-                if not existing:
-                    demo_user = User(
-                        email="demo@eagle.ai",
-                        hashed_password=get_password_hash("password123"),
-                        full_name="Demo User",
-                    )
-                    session.add(demo_user)
-                    await session.flush()
-                    session.add(UserSettings(user_id=demo_user.id))
-                    await session.commit()
-                    logger.info("Auto-seeded demo account: demo@eagle.ai / password123")
-
             _db_initialized = True
         except Exception as e:
             logger.warning(f"Database initialization warning: {e}")
