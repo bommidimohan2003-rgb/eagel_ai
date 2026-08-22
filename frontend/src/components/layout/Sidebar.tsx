@@ -148,8 +148,8 @@ export function Sidebar({
         {/* Workspace Brand Header */}
         <div className="p-4 border-b border-border flex items-center justify-between">
           <Link to="/chat" className="flex items-center gap-2.5 group">
-            <div className="w-9 h-9 rounded-xl bg-surface-100 border border-border flex items-center justify-center shadow-sm group-hover:border-primary/50 transition-colors p-1">
-              <EagleLogo className="w-7 h-7" withGlow />
+            <div className="w-9 h-9 rounded-xl bg-surface-100 border border-border flex items-center justify-center shadow-sm p-1">
+              <EagleLogo className="w-7 h-7" />
             </div>
             <div>
               <h1 className="text-sm font-bold text-text-primary tracking-tight leading-none group-hover:text-primary transition-colors">

@@ -21,11 +21,10 @@ export function StreamingMessage({ content, thinkingContent, onStop }: Streaming
       transition={{ duration: 0.25 }}
       className="flex gap-3 md:gap-4 my-6 px-2 md:px-4"
     >
-      {/* Bot Avatar with Glowing Aura */}
+      {/* Bot Avatar */}
       <div className="relative mt-0.5 flex-shrink-0">
-        <div className="absolute inset-0 rounded-xl bg-amber-500/20 blur-md animate-pulse" />
-        <div className="relative w-8 h-8 rounded-xl bg-surface-100 border border-primary/50 flex items-center justify-center shadow-glow p-1">
-          <EagleLogo className="w-6 h-6" withGlow />
+        <div className="w-8 h-8 rounded-xl bg-surface-100 border border-border flex items-center justify-center p-1 shadow-sm">
+          <EagleLogo className="w-6 h-6" />
         </div>
       </div>
 

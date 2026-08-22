@@ -53,9 +53,8 @@ export function LoginPage() {
         {/* Header Branding */}
         <div className="text-center mb-8">
           <div className="relative inline-flex items-center justify-center mb-4">
-            <div className="absolute -inset-3 bg-primary/20 blur-xl rounded-3xl animate-pulse" />
-            <div className="relative w-16 h-16 rounded-2xl bg-surface-100 border border-primary/40 flex items-center justify-center shadow-glow p-2">
-              <EagleLogo className="w-12 h-12" withGlow />
+            <div className="relative w-16 h-16 rounded-2xl bg-surface-100 border border-border flex items-center justify-center p-2 shadow-sm">
+              <EagleLogo className="w-12 h-12" />
             </div>
           </div>
           <h2 className="text-2xl font-bold text-text-primary tracking-tight">Welcome to <span className="shimmer-text">Eagle AI</span></h2>

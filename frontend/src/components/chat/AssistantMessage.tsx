@@ -45,12 +45,12 @@ export function AssistantMessage({ message, onRegenerate, onSelectPrompt }: Assi
     >
       {/* Premium Avatar */}
       <div className="relative mt-0.5 flex-shrink-0">
-        <div className={`w-8 h-8 rounded-xl border flex items-center justify-center shadow-glow transition-transform group-hover:scale-105 p-1 ${
+        <div className={`w-8 h-8 rounded-xl border flex items-center justify-center shadow-sm transition-transform group-hover:scale-105 p-1 ${
           imageItem
             ? 'bg-gradient-to-br from-purple-500/20 to-purple-500/5 border-purple-500/40 text-purple-400'
             : 'bg-surface-100 border-border text-primary'
         }`}>
-          {imageItem ? <ImageIcon className="w-4 h-4" /> : <EagleLogo className="w-6 h-6" withGlow />}
+          {imageItem ? <ImageIcon className="w-4 h-4" /> : <EagleLogo className="w-6 h-6" />}
         </div>
       </div>
 
