@@ -22,16 +22,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const initAuth = async () => {
-      const token = api.getAccessToken();
-      if (!token) {
-        setLoading(false);
-        return;
-      }
       try {
         const currentUser = await authService.getMe();
         setUser(currentUser);
-      } catch (err) {
-        console.error('Session validation error:', err);
+      } catch {
         api.clearTokens();
         setUser(null);
       } finally {

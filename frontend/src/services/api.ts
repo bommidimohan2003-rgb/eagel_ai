@@ -5,6 +5,8 @@ const API_BASE = import.meta.env.VITE_API_URL || '';
 class ApiClient {
   private client: AxiosInstance;
   private isRefreshing = false;
+  private inMemoryAccessToken: string | null = null;
+  private inMemoryRefreshToken: string | null = null;
   private failedQueue: Array<{
     resolve: (value?: any) => void;
     reject: (reason?: any) => void;
@@ -13,12 +15,13 @@ class ApiClient {
   constructor() {
     this.client = axios.create({
       baseURL: API_BASE,
+      withCredentials: true, // Enable automatic secure HTTP-only cookie transport
       headers: {
         'Content-Type': 'application/json',
       },
     });
 
-    // Request Interceptor to attach Bearer token
+    // Request Interceptor to attach Bearer token if present
     this.client.interceptors.request.use(
       (config: InternalAxiosRequestConfig) => {
         const token = this.getAccessToken();
@@ -48,7 +51,7 @@ class ApiClient {
               this.failedQueue.push({ resolve, reject });
             })
               .then((token) => {
-                if (originalRequest.headers) {
+                if (originalRequest.headers && token) {
                   originalRequest.headers.Authorization = `Bearer ${token}`;
                 }
                 return this.client(originalRequest);
@@ -59,21 +62,16 @@ class ApiClient {
           originalRequest._retry = true;
           this.isRefreshing = true;
 
-          const refreshToken = this.getRefreshToken();
-          if (!refreshToken) {
-            this.clearTokens();
-            this.processQueue(new Error('No refresh token available'), null);
-            this.isRefreshing = false;
-            return Promise.reject(error);
-          }
-
           try {
-            const { data } = await axios.post(`${API_BASE}/api/v1/auth/refresh`, {
-              refresh_token: refreshToken,
-            });
+            const refreshToken = this.getRefreshToken();
+            const { data } = await axios.post(
+              `${API_BASE}/api/v1/auth/refresh`,
+              { refresh_token: refreshToken || '' },
+              { withCredentials: true }
+            );
 
             this.setTokens(data.access_token, data.refresh_token);
-            if (originalRequest.headers) {
+            if (originalRequest.headers && data.access_token) {
               originalRequest.headers.Authorization = `Bearer ${data.access_token}`;
             }
             this.processQueue(null, data.access_token);
@@ -90,7 +88,7 @@ class ApiClient {
         if (error.response?.status === 405 || (error.response?.status === 404 && !API_BASE && window.location.hostname !== 'localhost')) {
           return Promise.reject(
             new Error(
-              'Backend API not connected: Vercel only hosts the frontend UI. Please set VITE_API_URL to your deployed FastAPI backend URL, or open http://localhost:5173 for local development.'
+              'Backend API not connected: Please ensure the backend is running and reachable.'
             )
           );
         }
@@ -117,27 +115,23 @@ class ApiClient {
   }
 
   public getAccessToken(): string | null {
-    if (typeof window === 'undefined') return null;
-    return localStorage.getItem('access_token');
+    return this.inMemoryAccessToken;
   }
 
   public getRefreshToken(): string | null {
-    if (typeof window === 'undefined') return null;
-    return localStorage.getItem('refresh_token');
+    return this.inMemoryRefreshToken;
   }
 
   public setTokens(accessToken: string, refreshToken?: string) {
-    if (typeof window === 'undefined') return;
-    localStorage.setItem('access_token', accessToken);
+    this.inMemoryAccessToken = accessToken;
     if (refreshToken) {
-      localStorage.setItem('refresh_token', refreshToken);
+      this.inMemoryRefreshToken = refreshToken;
     }
   }
 
   public clearTokens() {
-    if (typeof window === 'undefined') return;
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
+    this.inMemoryAccessToken = null;
+    this.inMemoryRefreshToken = null;
   }
 
   public async get<T = any>(url: string, params?: any): Promise<T> {
