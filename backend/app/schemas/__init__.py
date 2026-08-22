@@ -17,6 +17,16 @@ from app.schemas.chat import (
 from app.schemas.memory import MemoryCreate, MemoryUpdate, MemoryResponse
 from app.schemas.file import FileResponse, FileDetailResponse
 from app.schemas.settings import UserSettingsUpdate, UserSettingsResponse
+from app.schemas.image import (
+    ImageGenerationRequest,
+    ImageEditRequest,
+    ImageVariationRequest,
+    ImageItemResponse,
+    ImageGenerationResponse,
+    ImageListResponse,
+    PromptEnhanceRequest,
+    PromptEnhanceResponse,
+)
 
 __all__ = [
     "Token",
@@ -45,4 +55,12 @@ __all__ = [
     "FileDetailResponse",
     "UserSettingsUpdate",
     "UserSettingsResponse",
+    "ImageGenerationRequest",
+    "ImageEditRequest",
+    "ImageVariationRequest",
+    "ImageItemResponse",
+    "ImageGenerationResponse",
+    "ImageListResponse",
+    "PromptEnhanceRequest",
+    "PromptEnhanceResponse",
 ]

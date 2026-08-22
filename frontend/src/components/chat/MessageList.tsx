@@ -12,6 +12,7 @@ interface MessageListProps {
   isStreaming: boolean;
   onRegenerate?: () => void;
   onEditSubmit?: (newContent: string) => void;
+  onSelectPrompt?: (prompt: string) => void;
   onStop?: () => void;
 }
 
@@ -22,6 +23,7 @@ export function MessageList({
   isStreaming,
   onRegenerate,
   onEditSubmit,
+  onSelectPrompt,
   onStop,
 }: MessageListProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -78,6 +80,7 @@ export function MessageList({
               message={msg}
               onRegenerate={onRegenerate}
               onEditSubmit={onEditSubmit}
+              onSelectPrompt={onSelectPrompt}
             />
           ))}
 

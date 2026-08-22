@@ -34,6 +34,9 @@ class AIService:
         user_id: str,
         user_message: str,
         conversation_id: Optional[str] = None,
+        mode: Optional[str] = "chat",
+        aspect_ratio: Optional[str] = "1:1",
+        style: Optional[str] = None,
         model: Optional[str] = None,
         temperature: Optional[float] = None,
         top_p: Optional[float] = None,
@@ -52,7 +55,58 @@ class AIService:
         else:
             conv = await ConversationService.get_conversation(db, conversation_id, user_id)
 
-        # 2. Fetch User Settings
+        # Emit conversation ID to client
+        yield f"data: {json.dumps({'event': 'conversation_id', 'data': conversation_id})}\n\n"
+
+        # 2. Check if this request is Image Generation (explicit Image mode OR Auto mode with image intent)
+        from app.services.image_intent_service import ImageIntentService, IntentType
+        from app.services.image_service import image_service
+        from app.schemas.image import ImageGenerationRequest
+
+        is_image_intent = False
+        active_image_prompt = user_message
+
+        if mode == "image":
+            is_image_intent = True
+        elif mode == "auto":
+            intent_result = ImageIntentService.detect_intent(user_message)
+            if intent_result.get("intent") == IntentType.IMAGE_GENERATION:
+                is_image_intent = True
+                active_image_prompt = intent_result.get("prompt", user_message)
+
+        if is_image_intent:
+            yield f"data: {json.dumps({'event': 'start', 'data': {'model': 'flux-image'}})}\n\n"
+            yield f"data: {json.dumps({'event': 'thinking_delta', 'data': f'🎨 Synthesizing visual composition for: \"{active_image_prompt}\"...\n'})}\n\n"
+            
+            try:
+                gen_req = ImageGenerationRequest(
+                    prompt=active_image_prompt,
+                    aspect_ratio=aspect_ratio or "1:1",
+                    style=style,
+                    conversation_id=conversation_id,
+                )
+                img_res = await image_service.generate_images(db=db, user_id=user_id, request=gen_req)
+                
+                if img_res.images:
+                    primary_img = img_res.images[0]
+                    yield f"data: {json.dumps({'event': 'image', 'data': primary_img.model_dump(mode='json')})}\n\n"
+                    if primary_img.message_id:
+                        yield f"data: {json.dumps({'event': 'message_id', 'data': primary_img.message_id})}\n\n"
+
+                # Generate title if new conversation
+                if is_new_conversation:
+                    title = f"Image: {active_image_prompt[:30]}"
+                    await ConversationService.update_conversation(db=db, conversation_id=conversation_id, user_id=user_id, title=title)
+                    yield f"data: {json.dumps({'event': 'title', 'data': title})}\n\n"
+
+                yield f"data: {json.dumps({'event': 'done', 'data': {'conversation_id': conversation_id, 'image': img_res.images[0].model_dump(mode='json') if img_res.images else None}})}\n\n"
+                return
+            except Exception as e:
+                logger.error(f"Image generation in stream failed: {e}", exc_info=True)
+                yield f"data: {json.dumps({'event': 'error', 'data': f'Image generation error: {str(e)}'})}\n\n"
+                return
+
+        # 3. Fetch User Settings for Text Chat
         settings_stmt = select(UserSettings).where(UserSettings.user_id == user_id)
         settings_res = await db.execute(settings_stmt)
         user_settings = settings_res.scalar_one_or_none()
@@ -64,9 +118,6 @@ class AIService:
             role="user",
             content=user_message,
         )
-
-        # Emit conversation ID to client
-        yield f"data: {json.dumps({'event': 'conversation_id', 'data': conversation_id})}\n\n"
 
         # 4. Fetch Memories if enabled
         memories = []

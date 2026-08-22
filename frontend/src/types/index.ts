@@ -33,6 +33,16 @@ export interface Message {
   extra_metadata?: {
     thinking?: string;
     files?: string[];
+    type?: 'text' | 'image' | 'image_request';
+    image?: {
+      id: string;
+      url: string;
+      prompt: string;
+      width?: number;
+      height?: number;
+      aspect_ratio?: string;
+      style?: string | null;
+    };
     [key: string]: any;
   } | null;
   created_at: string;
@@ -74,6 +84,17 @@ export interface UserSettings {
 }
 
 export interface StreamEventPayload {
-  event: 'start' | 'text_delta' | 'thinking_delta' | 'conversation_id' | 'title' | 'message_id' | 'done' | 'error';
+  event:
+    | 'start'
+    | 'text_delta'
+    | 'thinking_delta'
+    | 'conversation_id'
+    | 'title'
+    | 'message_id'
+    | 'image'
+    | 'done'
+    | 'error';
   data: any;
 }
+
+export * from './image';

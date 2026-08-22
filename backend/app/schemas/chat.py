@@ -10,6 +10,9 @@ class ChatMessageInput(BaseModel):
 class ChatStreamRequest(BaseModel):
     conversation_id: Optional[str] = None
     message: str
+    mode: Optional[str] = "chat"  # "chat" | "image" | "auto"
+    aspect_ratio: Optional[str] = "1:1"
+    style: Optional[str] = None
     model: Optional[str] = None
     temperature: Optional[float] = None
     top_p: Optional[float] = None

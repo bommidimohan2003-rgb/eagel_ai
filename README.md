@@ -6,10 +6,12 @@ A production-grade, modular, and extensible Personal AI Assistant platform built
 
 ## 🚀 Features
 
-- **Real-Time Streaming**: Low-latency Server-Sent Events (SSE) token streaming with live thinking/reasoning view and stop generation controls.
-- **Provider-Agnostic AI Architecture**: Abstract `AIProvider` base interface with dedicated `NVIDIAProvider` communicating server-side with `https://integrate.api.nvidia.com/v1`.
+- **Multimodal AI Image Generation**: Full-featured generative studio supporting FLUX.1, SDXL, and DALL-E with customizable Aspect Ratios (`1:1`, `16:9`, `9:16`, `4:3`, `3:4`), Style presets, Prompt Enhancement, Lightbox viewer, and Gallery view.
+- **Provider-Agnostic AI Architecture**: Abstract `AIProvider` base interface for text (Nemotron 3 Ultra) and abstract `ImageGenerationProvider` interface with pluggable providers (`Pollinations`, `OpenAI`, `Stability`, `Mock`).
+- **Mode Switching (Chat / Image / Auto)**: Choose between conversational AI, direct image generation, or let the text model intelligently detect user intent.
+- **Permanent Local & Object Storage**: Generated images are stored permanently with metadata saved to conversation history.
 - **Context Builder & Long-Term Memory**: Automatic user preference extraction and injection alongside a sliding window conversation history.
-- **File Ingestion & Document QA**: Support for uploading and querying `PDF`, `DOCX`, and `TXT` files.
+- **File Ingestion & Document QA**: Support for uploading and querying `PDF`, `DOCX`, `TXT`, and image files.
 - **Full Conversation Management**: Search conversations across titles & message history, auto-generated short titles, pin, rename, and delete.
 - **Rich Dark-Themed UI**: Built with Tailwind CSS, Framer Motion, syntax highlighted code blocks with language pills & copy feedback, and Markdown rendering.
 - **Global Keyboard Shortcuts**:
@@ -18,6 +20,22 @@ A production-grade, modular, and extensible Personal AI Assistant platform built
   - `Escape`: Stop AI generation
   - `Enter`: Send message / `Shift + Enter`: New line
 - **Enterprise Security**: JWT access & refresh tokens, password hashing (Argon2 / bcrypt), CORS protection, rate limiting, and backend-only secret isolation.
+
+---
+
+## 🎨 Image Generation Configuration
+
+Add the following environment variables to `backend/.env` to configure the image generation engine:
+
+```env
+# Image Generation Engine
+IMAGE_PROVIDER="pollinations"      # pollinations | openai | stability | mock
+IMAGE_MODEL="flux"                 # flux | turbo | dall-e-3 | sd3
+IMAGE_API_KEY=""                   # Required if using OpenAI / Stability
+IMAGE_API_BASE_URL=""              # Optional custom base URL
+IMAGE_STORAGE_PROVIDER="local"     # local | s3
+IMAGE_RATE_LIMIT="10/minute"
+```
 
 ---
 

@@ -1,5 +1,5 @@
 import os
-from typing import List, Union
+from typing import List, Optional, Union
 from pydantic import AnyHttpUrl, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -57,12 +57,26 @@ class Settings(BaseSettings):
     # Rate Limiting
     RATE_LIMIT_PER_MINUTE: str = "60/minute"
     CHAT_RATE_LIMIT: str = "30/minute"
+    IMAGE_RATE_LIMIT: str = "10/minute"
 
-    # File uploads
+    # Image Generation Configuration
+    IMAGE_PROVIDER: str = "pollinations"  # pollinations | openai | stability | mock
+    IMAGE_MODEL: str = "flux"             # flux | turbo | dall-e-3 | sd3
+    IMAGE_API_KEY: Optional[str] = None
+    IMAGE_API_BASE_URL: Optional[str] = None
+    IMAGE_STORAGE_PROVIDER: str = "local" # local | s3
+    MAX_IMAGE_SIZE_BYTES: int = 15 * 1024 * 1024  # 15 MB
+
+    # File uploads & Storage
     UPLOAD_DIR: str = (
         "/tmp/uploads"
         if os.environ.get("VERCEL")
         else os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "uploads")
+    )
+    GENERATED_IMAGES_DIR: str = (
+        "/tmp/uploads/generated"
+        if os.environ.get("VERCEL")
+        else os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "uploads", "generated")
     )
     MAX_FILE_SIZE_BYTES: int = 20 * 1024 * 1024  # 20 MB
 
@@ -76,3 +90,4 @@ class Settings(BaseSettings):
 
 settings = Settings()
 os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
+os.makedirs(settings.GENERATED_IMAGES_DIR, exist_ok=True)

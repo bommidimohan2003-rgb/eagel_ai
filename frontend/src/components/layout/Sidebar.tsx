@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Calendar,
   Edit2,
+  Image as ImageIcon,
   LogOut,
   MessageSquare,
   MoreVertical,
@@ -184,6 +185,21 @@ export function Sidebar({
               Ctrl+Shift+O
             </kbd>
           </Button>
+
+          {/* AI Image Studio / Gallery Link */}
+          <Link
+            to="/images"
+            onClick={() => onCloseMobile?.()}
+            className="flex items-center justify-between px-3 py-2 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 text-purple-400 hover:text-purple-300 text-xs font-semibold transition-all group"
+          >
+            <span className="flex items-center gap-2">
+              <ImageIcon className="w-4 h-4 text-purple-400 group-hover:scale-110 transition-transform" />
+              <span>Image Gallery</span>
+            </span>
+            <span className="px-1.5 py-0.5 rounded-full bg-purple-500/20 text-[10px] font-mono font-bold">
+              AI
+            </span>
+          </Link>
 
           {/* Search Box */}
           <div className="relative">

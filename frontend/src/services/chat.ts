@@ -5,6 +5,9 @@ const API_BASE = import.meta.env.VITE_API_URL || '';
 export interface ChatStreamOptions {
   message: string;
   conversationId?: string | null;
+  mode?: 'chat' | 'image' | 'auto';
+  aspectRatio?: string;
+  style?: string;
   model?: string;
   temperature?: number;
   systemPrompt?: string;
@@ -16,6 +19,7 @@ export interface ChatStreamOptions {
   onConversationId?: (id: string) => void;
   onTitle?: (title: string) => void;
   onMessageId?: (id: string) => void;
+  onImage?: (imageData: any) => void;
   onDone?: (data: any) => void;
   onError?: (error: string) => void;
   signal?: AbortSignal;
@@ -37,6 +41,9 @@ export const chatService = {
     const payload = {
       conversation_id: options.conversationId || undefined,
       message: options.message,
+      mode: options.mode || 'chat',
+      aspect_ratio: options.aspectRatio || '1:1',
+      style: options.style || undefined,
       model: options.model,
       temperature: options.temperature,
       system_prompt: options.systemPrompt,
@@ -107,6 +114,9 @@ export const chatService = {
                 break;
               case 'message_id':
                 options.onMessageId?.(eventPayload.data);
+                break;
+              case 'image':
+                options.onImage?.(eventPayload.data);
                 break;
               case 'error':
                 options.onError?.(eventPayload.data);

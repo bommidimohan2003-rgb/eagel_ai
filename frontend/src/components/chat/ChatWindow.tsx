@@ -85,6 +85,7 @@ export function ChatWindow({
           isStreaming={isStreaming}
           onRegenerate={regenerateResponse}
           onEditSubmit={handleEditSubmit}
+          onSelectPrompt={(prompt) => sendMessage(prompt)}
           onStop={stopGeneration}
         />
       ) : (
@@ -93,7 +94,7 @@ export function ChatWindow({
 
       {/* Chat Composer */}
       <ChatInput
-        onSendMessage={(msg, fileIds) => sendMessage(msg, fileIds)}
+        onSendMessage={(msg, fileIds, options) => sendMessage(msg, fileIds, options)}
         isStreaming={isStreaming}
         onStop={stopGeneration}
       />

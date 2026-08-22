@@ -1,18 +1,39 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Bot, ChevronDown, ChevronRight, Cpu, Sparkles } from 'lucide-react';
+import { Bot, ChevronDown, ChevronRight, Cpu, Sparkles, Image as ImageIcon } from 'lucide-react';
 import { MarkdownRenderer } from '@/components/chat/MarkdownRenderer';
 import { MessageActions } from '@/components/chat/MessageActions';
-import { Message } from '@/types';
+import { GeneratedImageCard } from '@/components/image-generation/GeneratedImageCard';
+import { GeneratedImageItem, Message } from '@/types';
 
 interface AssistantMessageProps {
   message: Message;
   onRegenerate?: () => void;
+  onSelectPrompt?: (prompt: string) => void;
 }
 
-export function AssistantMessage({ message, onRegenerate }: AssistantMessageProps) {
+export function AssistantMessage({ message, onRegenerate, onSelectPrompt }: AssistantMessageProps) {
   const [showThinking, setShowThinking] = useState(false);
   const thinking = message.extra_metadata?.thinking || null;
+  const imageMeta = message.extra_metadata?.image || null;
+
+  // Adapt image metadata to GeneratedImageItem interface if present
+  const imageItem: GeneratedImageItem | null = imageMeta
+    ? {
+        id: imageMeta.id || message.id,
+        url: imageMeta.url || '',
+        image_url: imageMeta.url || '',
+        width: imageMeta.width || 1024,
+        height: imageMeta.height || 1024,
+        aspect_ratio: (imageMeta.aspect_ratio as any) || '1:1',
+        style: imageMeta.style || null,
+        prompt: imageMeta.prompt || message.content,
+        provider: 'pollinations',
+        model: message.model || 'flux',
+        generation_status: 'COMPLETED',
+        created_at: message.created_at,
+      }
+    : null;
 
   return (
     <motion.div
@@ -23,8 +44,12 @@ export function AssistantMessage({ message, onRegenerate }: AssistantMessageProp
     >
       {/* Premium Avatar */}
       <div className="relative mt-0.5 flex-shrink-0">
-        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/40 flex items-center justify-center text-primary shadow-glow transition-transform group-hover:scale-105">
-          <Sparkles className="w-4 h-4" />
+        <div className={`w-8 h-8 rounded-xl border flex items-center justify-center shadow-glow transition-transform group-hover:scale-105 ${
+          imageItem
+            ? 'bg-gradient-to-br from-purple-500/20 to-purple-500/5 border-purple-500/40 text-purple-400'
+            : 'bg-gradient-to-br from-primary/20 to-primary/5 border-primary/40 text-primary'
+        }`}>
+          {imageItem ? <ImageIcon className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
         </div>
       </div>
 
@@ -32,7 +57,9 @@ export function AssistantMessage({ message, onRegenerate }: AssistantMessageProp
       <div className="flex-1 min-w-0">
         {/* Header Tags */}
         <div className="flex items-center gap-2 mb-2 text-xs text-text-muted">
-          <span className="font-semibold text-text-primary text-xs tracking-tight">Eagle</span>
+          <span className="font-semibold text-text-primary text-xs tracking-tight">
+            {imageItem ? 'Eagle Visual Studio' : 'Eagle'}
+          </span>
           {message.model && (
             <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-100 border border-border text-[10px] text-text-secondary font-mono">
               <Cpu className="w-2.5 h-2.5 text-primary" />
@@ -67,10 +94,23 @@ export function AssistantMessage({ message, onRegenerate }: AssistantMessageProp
           </div>
         )}
 
+        {/* Generated Image Embedded Preview */}
+        {imageItem && (
+          <div className="mb-4 max-w-lg">
+            <GeneratedImageCard
+              image={imageItem}
+              onRegenerate={onRegenerate}
+              onReusePrompt={onSelectPrompt}
+            />
+          </div>
+        )}
+
         {/* Message Body */}
-        <div className="relative">
-          <MarkdownRenderer content={message.content} />
-        </div>
+        {(!imageItem || (message.content && !message.content.startsWith('Here is the generated image'))) && (
+          <div className="relative">
+            <MarkdownRenderer content={message.content} />
+          </div>
+        )}
 
         {/* Footer Actions */}
         <MessageActions
