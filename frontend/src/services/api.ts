@@ -36,7 +36,13 @@ class ApiClient {
       async (error: AxiosError) => {
         const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
-        if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+        // Only attempt refresh token for authenticated API requests, NOT auth endpoints themselves
+        const isAuthEndpoint =
+          originalRequest?.url?.includes('/auth/login') ||
+          originalRequest?.url?.includes('/auth/register') ||
+          originalRequest?.url?.includes('/auth/refresh');
+
+        if (error.response?.status === 401 && originalRequest && !originalRequest._retry && !isAuthEndpoint) {
           if (this.isRefreshing) {
             return new Promise((resolve, reject) => {
               this.failedQueue.push({ resolve, reject });
